@@ -1,11 +1,26 @@
+require('dotenv').config();
 const mongoose = require("mongoose");
 
-mongoose.connect('mongodb://localhost:27017/expense_tracker', {
+// Get MongoDB URI from environment variables
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  console.error('MONGODB_URI is not defined in environment variables');
+  process.exit(1);
+}
+
+// Connect to MongoDB Atlas
+mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
 })
-.then(() => console.log('Connected to MongoDB'))
-.catch(err => console.error('MongoDB connection error:', err));
+.then(() => {
+  console.log('Successfully connected to MongoDB Atlas');
+})
+.catch(err => {
+  console.error('MongoDB Atlas connection error:', err);
+  process.exit(1);
+});
 
 const expenseSchema = new mongoose.Schema({
   title: {
@@ -16,6 +31,13 @@ const expenseSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  }
+}, {
+  timestamps: true
 });
 
 const ExpenseModel = mongoose.model("expenses", expenseSchema);
